@@ -1,20 +1,20 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner"; 
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const s3 = new S3Client({ region: "your-region" });
-const sns = new SNSClient({ region: "your-region" });
-const dynamoDB = new DynamoDBClient({ region: "your-region" });
+const s3 = new S3Client({ region: "us-east-1" });
+const sns = new SNSClient({ region: "us-east-1" });
+const dynamoDB = new DynamoDBClient({ region: "us-east-1" });
 
-const SNS_TOPIC_ARN = "your-sns-arn";
-const DYNAMODB_TABLE_NAME = "your-table";
+const SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:545009848926:ImageUploadNotifications";
+const DYNAMODB_TABLE_NAME = "ImageUploads";
 
 export const handler = async (event) => {
   try {
     const { filename, contentType, email } = JSON.parse(event.body);
     console.log(filename, contentType, email);
-    const bucketName = "your-bucket";
+    const bucketName = "cc-aws-workshop2-images";
 
     // Generate pre-signed URL
     const uploadParams = {
@@ -23,9 +23,9 @@ export const handler = async (event) => {
       ContentType: contentType,
     };
     const command = new PutObjectCommand(uploadParams);
-    
+
     const uploadURL = await getSignedUrl(s3, command, { expiresIn: 60 });
-    
+
     // Save data to DynamoDB
     const timestamp = new Date().toISOString();
     const item = {
